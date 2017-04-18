@@ -15,8 +15,10 @@
  */
 package nl.knaw.dans.easy.stage.lib
 
+import java.net.URL
+
 import nl.knaw.dans.easy.stage.Settings
-import nl.knaw.dans.easy.stage.fileitem.FileItemSettings
+import nl.knaw.dans.easy.stage.fileitem.{ FileDatastream, FileItemSettings, FolderDatastream, RedirectDatastream }
 import org.json4s.JsonAST.JValue
 import org.json4s.JsonDSL._
 import org.json4s.native.JsonMethods._
@@ -92,9 +94,9 @@ object JSON {
           ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/dans-container-item-v1")))
     }
 
-    def redirectFileDatastreamJson = {
+    def redirectFileDatastreamJson(dsLocation: URL) = {
       createJSON(
-        ("dsLocation" -> settings.datastreamLocation.get.toURI.toASCIIString) ~
+        ("dsLocation" -> dsLocation.toURI.toASCIIString) ~
           ("dsID" -> "EASY_FILE") ~
           ("controlGroup" -> "R") ~
           ("mimeType" -> mimeType)
@@ -112,9 +114,16 @@ object JSON {
       )
     }
 
-    val json = settings.file
-      .map(_ => managedFileDatastreamJson)
-      .getOrElse(redirectFileDatastreamJson)
+    // TODO perhaps move this to the class that calls createFileCfg and split the redirect and managed JSON creation into two top-level methods
+    val json = settings.datastream match {
+      case FileDatastream(_) => managedFileDatastreamJson
+      case RedirectDatastream(url) => redirectFileDatastreamJson(url)
+      case FolderDatastream => ???
+    }
+
+//    val json = settings.file
+//      .map(_ => managedFileDatastreamJson)
+//      .getOrElse(redirectFileDatastreamJson)
     pretty(render(json))
   }
 

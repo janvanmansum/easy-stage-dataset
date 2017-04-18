@@ -114,7 +114,7 @@ object EasyStageFileItem {
 
 
   def createFileSdo(sdoDir: File, parent: (String,String))(implicit s: FileItemSettings): Try[Unit] = {
-    require(s.datastreamLocation.isDefined != s.file.isDefined, s"Exactly one of datastreamLocation and file must be defined (datastreamLocation = ${s.datastreamLocation}, file = ${s.file})")
+//    require(s.datastreamLocation.isDefined != s.file.isDefined, s"Exactly one of datastreamLocation and file must be defined (datastreamLocation = ${s.datastreamLocation}, file = ${s.file})")
     log.debug(s"Creating file SDO: ${s.pathInDataset.getOrElse("<no path in dataset?>")}")
     sdoDir.mkdir()
     for {
@@ -126,7 +126,7 @@ object EasyStageFileItem {
       _            <- writeFoxml(sdoDir, foxmlContent)
       fmd          <- EasyFileMetadata(s)
       _            <- writeFileMetadata(sdoDir, fmd)
-      _            <- s.file.flatMap(_ => s.file.map(copyFile(sdoDir, _))).getOrElse(Success(Unit))
+      _            <- Option(s.datastream).collect { case FileDatastream(file) => copyFile(sdoDir, file) }.getOrElse(Success(())) // TODO this is just a hack, not yet happy with this.
     } yield ()
   }
 

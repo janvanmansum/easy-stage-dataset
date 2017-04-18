@@ -15,16 +15,16 @@
  */
 package nl.knaw.dans.easy.stage
 
-import java.io.{File, FileNotFoundException}
+import java.io.{ File, FileNotFoundException }
 import java.net.URLEncoder
-import java.nio.file.{Path, Paths}
+import java.nio.file.{ Path, Paths }
 
 import gov.loc.repository.bagit.BagFactory
 import nl.knaw.dans.common.lang.dataset.AccessCategory
 import nl.knaw.dans.easy.stage.dataset.AMD.AdministrativeMetadata
 import nl.knaw.dans.easy.stage.dataset.Util._
 import nl.knaw.dans.easy.stage.dataset._
-import nl.knaw.dans.easy.stage.fileitem.{EasyStageFileItem, FileAccessRights, FileItemSettings}
+import nl.knaw.dans.easy.stage.fileitem._
 import nl.knaw.dans.easy.stage.lib.Constants._
 import nl.knaw.dans.easy.stage.lib.FOXML._
 import nl.knaw.dans.easy.stage.lib.JSON
@@ -33,10 +33,10 @@ import nl.knaw.dans.lib.error._
 import nl.knaw.dans.pf.language.emd.EasyMetadata
 import org.apache.commons.configuration.PropertiesConfiguration
 import org.apache.commons.io.FileUtils.readFileToString
-import org.slf4j.{Logger, LoggerFactory}
+import org.slf4j.{ Logger, LoggerFactory }
 
 import scala.collection.JavaConverters._
-import scala.util.{Failure, Success, Try}
+import scala.util.{ Failure, Success, Try }
 import scala.xml.NodeSeq
 
 object EasyStageDataset {
@@ -143,9 +143,20 @@ object EasyStageDataset {
         fileAccessRights <- getFileAccessRights(fileMetadata)
         fis = FileItemSettings(
           sdoSetDir = s.sdoSetDir,
-          file = if (s.fileUris.get(getBagRelativePath(file.toPath)).isDefined) None
-                 else Some(file),
-          datastreamLocation = s.fileUris.get(getBagRelativePath(file.toPath)).map(_.toURL),
+//          file = {
+//            s.fileUris
+//              .get(getBagRelativePath(file.toPath))
+//              .map(_ => None)
+//              .getOrElse(Option(file))
+//
+//            if (s.fileUris.get(getBagRelativePath(file.toPath)).isDefined) None
+//            else Some(file)
+//          },
+//          datastreamLocation = s.fileUris.get(getBagRelativePath(file.toPath)).map(_.toURL),
+          datastream = s.fileUris
+            .get(getBagRelativePath(file.toPath))
+            .map(uri => RedirectDatastream(uri.toURL))
+            .getOrElse(FileDatastream(file)),
           ownerId = s.ownerId,
           pathInDataset = new File(datasetRelativePath.toString),
           size = Some(file.length),

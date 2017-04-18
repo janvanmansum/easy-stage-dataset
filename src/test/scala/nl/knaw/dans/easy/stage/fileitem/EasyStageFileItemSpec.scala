@@ -75,7 +75,8 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
     EasyStageFileItem.run(new FileItemSettings(
       ownerId = Some("testOwner"),
       sdoSetDir = Some(new File("target/testSDO")),
-      file = Some(new File("original/newSub/file.mpeg")), // TODO this may fail!
+//      file = Some(new File("original/newSub/file.mpeg")), // TODO this may fail!
+      datastream = FileDatastream(new File("original/newSub/file.mpeg")),
       size = Some(1),
       datasetId = Some("easy-dataset:1"),
       pathInDataset = Some(new File("original/newSub/file.mpeg")),
@@ -124,7 +125,8 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
   it should "report a missing size" in {
     the[NoSuchElementException] thrownBy EasyStageFileItem.run(new FileItemSettings(
       sdoSetDir = Some(new File("target/testSDO")),
-      datastreamLocation = Some(new URL("http://x.nl/l/d")),
+//      datastreamLocation = Some(new URL("http://x.nl/l/d")),
+      datastream = RedirectDatastream(new URL("http://x.nl/l/d")),
       size = None,
       datasetId = Some("easy-dataset:1"),
       pathInDataset = Some(new File("original/newSub/file.mpeg")),
@@ -146,6 +148,7 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
   it should "report a fedora error" in {
     the[Exception] thrownBy EasyStageFileItem.run(new FileItemSettings(
       sdoSetDir = Some(new File("target/testSDO")),
+      datastream = FolderDatastream, // TODO this may be incorrect, but there was no file/datastreamLocation to replace
       size = Some(1),
       datasetId = Some("easy-dataset:1"),
       pathInDataset = Some(new File("original/newSub/file.mpeg")),
@@ -165,6 +168,7 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
   it should "report the dataset does not exist" in {
     the[Exception] thrownBy EasyStageFileItem.run(new FileItemSettings(
       sdoSetDir = Some(new File("target/testSDO")),
+      datastream = FolderDatastream, // TODO this may be incorrect, but there was no file/datastreamLocation to replace
       size = Some(1),
       datasetId = Some("easy-dataset:1"),
       pathInDataset = Some(new File("original/newSub/file.mpeg")),
@@ -187,8 +191,9 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
     sdoSetDir.mkdirs()
     implicit val s = FileItemSettings(
       sdoSetDir = sdoSetDir,
-      file = Some(new File("path/to/uuid-as-file-name")),
-      datastreamLocation = None,
+      datastream = FileDatastream(new File("path/to/uuid-as-file-name")),
+//      file = Some(new File("path/to/uuid-as-file-name")),
+//      datastreamLocation = None,
       ownerId = "testOwner",
       pathInDataset = new File("path/to/uuid-as-file-name"),
       size = Some(1),
@@ -212,8 +217,9 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
     sdoSetDir.mkdirs()
     implicit val s = FileItemSettings(
       sdoSetDir = sdoSetDir,
-      file = Some(new File("path/to/uuid-as-file-name")),
-      datastreamLocation = None,
+      datastream = FileDatastream(new File("path/to/uuid-as-file-name")),
+//      file = Some(new File("path/to/uuid-as-file-name")),
+//      datastreamLocation = None,
       ownerId = "testOwner",
       pathInDataset = new File("path/to/uuid-as-file-name"),
       size = Some(1),
