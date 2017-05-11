@@ -22,10 +22,16 @@ import nl.knaw.dans.easy.stage.fileitem.FileAccessRights.UserCategory
 import nl.knaw.dans.easy.stage.fileitem.FileItemSettings._
 import nl.knaw.dans.easy.stage.lib.Fedora
 
+sealed abstract class Datastream
+case class FileDatastream(file: File) extends Datastream
+case class RedirectDatastream(url: URL) extends Datastream
+case object FolderDatastream extends Datastream // TODO, not sure if we should have this, but I need it for now to get the FileItemSettings.apply(folder) to compile; everywhere else it's a burden
+
 case class FileItemSettings (sdoSetDir: Option[File],
-                             file: Option[File] = None,
+                             datastream: Datastream,
+//                             file: Option[File] = None,
                              datasetId: Option[String],
-                             datastreamLocation: Option[URL] = None,
+//                             datastreamLocation: Option[URL] = None,
                              size: Option[Long] = None,
                              ownerId: Option[String] = None,
                              pathInDataset: Option[File],
@@ -50,8 +56,9 @@ object FileItemSettings {
 
   /** new file for a new dataset */
   def apply(sdoSetDir: File,
-            file: Option[File],
-            datastreamLocation: Option[URL],
+            datastream: Datastream,
+//            file: Option[File],
+//            datastreamLocation: Option[URL],
             ownerId: String,
             pathInDataset: File,
             format: Option[String],
@@ -64,8 +71,9 @@ object FileItemSettings {
     // no need to catch exceptions thrown by the constructor as the defaults take care of valid values
     new FileItemSettings(
       sdoSetDir = Some(sdoSetDir),
-      file = file,
-      datastreamLocation = datastreamLocation,
+//      file = file,
+//      datastreamLocation = datastreamLocation,
+      datastream = datastream,
       datasetId = None,
       size = size,
       ownerId = Some(ownerId),
@@ -85,6 +93,7 @@ object FileItemSettings {
     // no need to catch exceptions thrown by the constructor as the defaults take care of valid values
     new FileItemSettings(
       sdoSetDir = Some(sdoSetDir),
+      datastream = FolderDatastream,
       datasetId = None,
       ownerId = Some(ownerId),
       pathInDataset = Some(pathInDataset)
@@ -95,8 +104,9 @@ object FileItemSettings {
     // no need to catch exceptions thrown by the constructor as FileItemConf performs the same checks
     new FileItemSettings(
       sdoSetDir = conf.sdoSetDir.toOption,
-      file = conf.file.toOption,
-      datastreamLocation = conf.dsLocation.toOption,
+//      file = conf.file.toOption,
+//      datastreamLocation = conf.dsLocation.toOption,
+      datastream = conf.file.toOption.map(FileDatastream).orElse(conf.dsLocation.toOption.map(RedirectDatastream)).getOrElse(FolderDatastream),
       size = conf.size.toOption,
       accessibleTo = conf.accessibleTo(),
       visibleTo = conf.visibleTo(),
